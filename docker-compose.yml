@@ -1,0 +1,40 @@
+version: "3.8"
+
+networks:
+  lab-net:
+
+volumes:
+  pg_data:
+
+services:
+  app:
+    build: ./app
+    container_name: lab-app
+    ports: ["8080:5000"]
+    environment:
+      PGHOST: postgres
+      PGDB: appdb
+      PGUSER: appuser
+      PGPASS: secret
+      REDIS_HOST: redis
+    networks: [lab-net]
+    depends_on: [postgres, redis]
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: lab-postgres
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks: [lab-net]
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: lab-redis
+    networks: [lab-net]
+    restart: unless-stopped
